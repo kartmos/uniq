@@ -14,7 +14,6 @@ var cFlag bool
 var iFlag bool
 var fFlag int
 var sFlag int
-var app = App{}
 
 type App struct {
 	Input              *os.File
@@ -23,6 +22,8 @@ type App struct {
 	PreviousLineOrigin *string
 	PrintLine          *string
 }
+
+var app = App{}
 
 func init() {
 	flag.BoolVar(&cFlag, "c", false, "Подсчитать количество встречаний строки во входных данных")
@@ -140,92 +141,6 @@ func withIArg(str, strOrig string, r int) int {
 }
 
 // Выполняет функционал первых 3х флагов без флага "-i"
-func firstArg(strOrig string, n int) int {
-	var duplicates = n
-	switch true {
-	case cFlag:
-		if app.PreviousLineOrigin == nil {
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = &strOrig
-			duplicates++
-		} else if *app.PreviousLineOrigin == strOrig && duplicates == 1 {
-			app.PrintLine = app.PreviousLineOrigin
-			app.PreviousLineOrigin = &strOrig
-			duplicates++
-		} else if *app.PreviousLineOrigin == strOrig && duplicates > 1 {
-			app.PreviousLineOrigin = &strOrig
-			duplicates++
-		} else if *app.PreviousLineOrigin != strOrig {
-			fmt.Fprintf(app.Output, "%d %s\n", duplicates, *app.PrintLine)
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = app.PreviousLineOrigin
-			duplicates = 1
-		}
-	case uFlag:
-		if app.PreviousLineOrigin == nil {
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = &strOrig
-			duplicates++
-		} else if *app.PreviousLineOrigin == strOrig && duplicates == 1 {
-			app.PrintLine = app.PreviousLineOrigin
-			app.PreviousLineOrigin = &strOrig
-			duplicates++
-		} else if *app.PreviousLineOrigin == strOrig && duplicates > 1 {
-			app.PreviousLineOrigin = &strOrig
-			duplicates++
-		} else if *app.PreviousLineOrigin != strOrig && duplicates > 1 {
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = app.PreviousLineOrigin
-			duplicates = 1
-		} else if *app.PreviousLineOrigin != strOrig && duplicates == 1 {
-			fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = app.PreviousLineOrigin
-			duplicates = 1
-		}
-	case dFlag:
-		if app.PreviousLineOrigin == nil {
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = &strOrig
-			duplicates++
-		} else if *app.PreviousLineOrigin == strOrig && duplicates == 1 {
-			app.PrintLine = app.PreviousLineOrigin
-			app.PreviousLineOrigin = &strOrig
-			duplicates++
-		} else if *app.PreviousLineOrigin == strOrig && duplicates > 1 {
-			app.PreviousLineOrigin = &strOrig
-			duplicates++
-		} else if *app.PreviousLineOrigin != strOrig && duplicates > 1 {
-			fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = app.PreviousLineOrigin
-			duplicates = 1
-		} else if *app.PreviousLineOrigin != strOrig && duplicates == 1 {
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = app.PreviousLineOrigin
-			duplicates = 1
-		}
-	default:
-		if app.PreviousLineOrigin == nil {
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = &strOrig
-			duplicates++
-		} else if *app.PreviousLineOrigin == strOrig && duplicates == 1 {
-			app.PrintLine = app.PreviousLineOrigin
-			app.PreviousLineOrigin = &strOrig
-			duplicates++
-		} else if *app.PreviousLineOrigin == strOrig && duplicates > 1 {
-			app.PreviousLineOrigin = &strOrig
-			duplicates++
-		} else if *app.PreviousLineOrigin != strOrig {
-			fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = app.PreviousLineOrigin
-			duplicates = 1
-		}
-	}
-	return duplicates
-}
 
 func openFile(filename string) *os.File {
 	fh, err := os.Open(filename)
@@ -259,6 +174,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	// func fArg(inLine, string) string{
+	// 	fields := strings.Fields(inline)
+	// 	countFields := len(fields)
+	// 	for i = *fFlag - 1; i <= countFields; i++
+	// }
+
 	stage := bufio.NewScanner(app.Input)
 	count := 0
 	for stage.Scan() {
@@ -268,7 +189,7 @@ func main() {
 			count = withIArg(line, lineOrigin, count)
 		} else {
 			lineOrigin := stage.Text()
-			count = firstArg(lineOrigin, count)
+			count = withIArg(lineOrigin, lineOrigin, count)
 		}
 	}
 	//Проверка последнего предложения если оно не вывелось
