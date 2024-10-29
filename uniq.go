@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	//"strings"
+	"strings"
 )
 
 var uFlag bool
@@ -15,11 +15,11 @@ var iFlag bool
 var sFlag int
 var app = App{}
 
-
 type App struct {
-	Input        *os.File
-	Output       *os.File
-	PreviousLine *string
+	Input              *os.File
+	Output             *os.File
+	PreviousLine       *string
+	PreviousLineOrigin *string
 }
 
 func init() {
@@ -29,38 +29,56 @@ func init() {
 	flag.BoolVar(&iFlag, "i", false, "count")
 	flag.IntVar(&sFlag, "s", 0, "skip")
 }
-//Выполняет функционал первых 3х флагов 
+
+// Выполняет функционал первых 3х флагов
 func cduArg(scanner *bufio.Scanner) {
 	duplicates := 0
-    switch true {
-    case cFlag:
+	switch true {
+	case cFlag:
 		fmt.Printf("cFlag: %v :%+v\n", cFlag, flag.Args())
 		fmt.Printf("Посчитать строки\n")
 		for scanner.Scan() {
-			line := scanner.Text()
-			if app.PreviousLine == nil{
-				app.PreviousLine = &line
-			} else if *app.PreviousLine != line {
-				if cFlag {
-					fmt.Fprintf(app.Output, "%d %s\n", duplicates, *app.PreviousLine)
+			if iFlag {
+				line := strings.ToLower(scanner.Text())
+				lineOrigin := scanner.Text()
+				if app.PreviousLine == nil {
+					app.PreviousLine = &line
+					app.PreviousLineOrigin = &lineOrigin
+				} else if *app.PreviousLine == line {
+					if duplicates == 1 {
+						fmt.Fprintf(app.Output, "%d %s\n", duplicates, *app.PreviousLineOrigin)
+					}
+					app.PreviousLine = &line
+					app.PreviousLineOrigin = &lineOrigin
+					duplicates++
+				} else {
+					app.PreviousLine = &line
+					app.PreviousLineOrigin = &lineOrigin
+					duplicates = 0
 				}
-				app.PreviousLine = &line
-				duplicates = 0
-			} 
-			duplicates++
-		}
-		if app.PreviousLine != nil {
-			if cFlag {
-				fmt.Fprintf(app.Output, "%d %s\n", duplicates, *app.PreviousLine)
+				duplicates++
+			} else {
+				line := scanner.Text()
+				if app.PreviousLine == nil {
+					app.PreviousLine = &line
+				} else if *app.PreviousLine != line {
+					fmt.Fprintf(app.Output, "%d %s\n", duplicates, *app.PreviousLine)
+					app.PreviousLine = &line
+					duplicates = 0
+				}
+				duplicates++
 			}
 		}
-    case uFlag:
-		
+		if app.PreviousLine != nil {
+			fmt.Fprintf(app.Output, "%d %s\n", duplicates, *app.PreviousLine)
+		}
+	case uFlag:
+
 		fmt.Printf("uFlag: %v :%+v\n", uFlag, flag.Args())
 		fmt.Printf("Вывод не повторяющиеся строк\n")
 		for scanner.Scan() {
 			line := scanner.Text()
-			if app.PreviousLine == nil{
+			if app.PreviousLine == nil {
 				app.PreviousLine = &line
 			} else if *app.PreviousLine != line {
 				if duplicates > 1 {
@@ -68,20 +86,20 @@ func cduArg(scanner *bufio.Scanner) {
 				}
 				app.PreviousLine = &line
 				duplicates = 0
-			} 
+			}
 			duplicates++
 		}
 		if app.PreviousLine != nil {
 			if duplicates == 1 {
 				fmt.Fprintf(app.Output, "%s\n", *app.PreviousLine)
 			}
-		}	
-    case dFlag:
+		}
+	case dFlag:
 		fmt.Printf("dFlag: %v :%+v\n", dFlag, flag.Args())
 		fmt.Printf("Вывод повторяющиеся строки\n")
 		for scanner.Scan() {
 			line := scanner.Text()
-			if app.PreviousLine == nil{
+			if app.PreviousLine == nil {
 				app.PreviousLine = &line
 			} else if *app.PreviousLine != line {
 				if duplicates > 1 {
@@ -89,7 +107,7 @@ func cduArg(scanner *bufio.Scanner) {
 				}
 				app.PreviousLine = &line
 				duplicates = 0
-			} 
+			}
 			duplicates++
 		}
 		if app.PreviousLine != nil {
@@ -97,8 +115,8 @@ func cduArg(scanner *bufio.Scanner) {
 				fmt.Fprintf(app.Output, "%s\n", *app.PreviousLine)
 			}
 		}
-	}	
-}	
+	}
+}
 
 func openFile(filename string) *os.File {
 	fh, err := os.Open(filename)
@@ -111,7 +129,6 @@ func openFile(filename string) *os.File {
 
 func main() {
 	flag.Parse()
-
 
 	argN := len(flag.Args())
 	switch argN {
@@ -133,56 +150,6 @@ func main() {
 		os.Exit(1)
 	}
 
-
 	stage := bufio.NewScanner(app.Input)
 	cduArg(stage)
-
-
-
-
-
-	// switch true {
-	// case cFlag:
-	// 	fmt.Printf("\ncFlag: %v :%+v\n", cFlag, flag.Args())
-	// 	fmt.Printf("\nПосчитать строки\n\n")
-	// 	for stage.Scan() {
-	// 		line := stage.Text()
-	// 		if app.PreviousLine == nil {
-	// 			app.PreviousLine = &line
-	// 		} else if *app.PreviousLine != line {
-	// 			if cFlag {
-	// 				fmt.Fprintf(app.Output, "%d %s\n", duplicates, *app.PreviousLine)
-	// 			}
-	// 			app.PreviousLine = &line
-	// 			duplicates = 0
-	// 		}
-	// 		duplicates++
-	// 	}
-	// 	if app.PreviousLine != nil {
-	// 		if cFlag {
-	// 			fmt.Fprintf(app.Output, "%d %s\n", duplicates, *app.PreviousLine)
-	// 		}
-	// 	}
-	// case uFlag:
-	// 	fmt.Println("Вывод не повторяющиеся строк")
-
-	// case dFlag:
-	// 	fmt.Println("Вывести повторяющиеся строки")
-
-	// default:
-	// 	for stage.Scan() {
-	// 		line := stage.Text()
-	// 		if app.PreviousLine == nil {
-	// 			app.PreviousLine = &line
-	// 		} else if *app.PreviousLine != line {
-	// 			fmt.Fprintln(app.Output, *app.PreviousLine)
-	// 		}
-	// 		app.PreviousLine = &line
-	// 		duplicates = 0
-	// 	}
-	// 	duplicates++
-	// 	if app.PreviousLine != nil {
-	// 		fmt.Fprintln(app.Output, *app.PreviousLine)
-	// 	}
-	// }
 }
