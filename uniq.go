@@ -12,6 +12,7 @@ var uFlag bool
 var dFlag bool
 var cFlag bool
 var iFlag bool
+var fFlag int
 var sFlag int
 var app = App{}
 
@@ -28,7 +29,8 @@ func init() {
 	flag.BoolVar(&uFlag, "u", false, "Не повторяющиеся строки")
 	flag.BoolVar(&dFlag, "d", false, "Повторяющиеся строки")
 	flag.BoolVar(&iFlag, "i", false, "Сравнение без учета регистра")
-	flag.IntVar(&sFlag, "s", 0, "skip")
+	flag.IntVar(&fFlag, "f", 0, "Пропускаем поле")
+	flag.IntVar(&sFlag, "s", 0, "Пропускаем символ")
 }
 
 // Выполняет функционал первых 3х флагов если также есть флаг "-i"
@@ -84,6 +86,55 @@ func withIArg(str, strOrig string, r int) int {
 			app.PrintLine = app.PreviousLineOrigin
 			duplicates = 1
 		}
+	case dFlag:
+		if app.PreviousLine == nil {
+			app.PreviousLine = &str
+			app.PreviousLineOrigin = &strOrig
+			app.PrintLine = &str
+			duplicates++
+		} else if *app.PreviousLine == str && duplicates == 1 {
+			app.PrintLine = app.PreviousLineOrigin
+			app.PreviousLine = &str
+			app.PreviousLineOrigin = &strOrig
+			duplicates++
+		} else if *app.PreviousLine == str && duplicates > 1 {
+			app.PreviousLine = &str
+			app.PreviousLineOrigin = &strOrig
+			duplicates++
+		} else if *app.PreviousLine != str && duplicates > 1 {
+			fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
+			app.PreviousLine = &str
+			app.PreviousLineOrigin = &strOrig
+			app.PrintLine = app.PreviousLineOrigin
+			duplicates = 1
+		} else if *app.PreviousLine != str && duplicates == 1 {
+			app.PreviousLine = &str
+			app.PreviousLineOrigin = &strOrig
+			app.PrintLine = app.PreviousLineOrigin
+			duplicates = 1
+		}
+	default:
+		if app.PreviousLine == nil {
+			app.PreviousLine = &str
+			app.PreviousLineOrigin = &strOrig
+			app.PrintLine = &str
+			duplicates++
+		} else if *app.PreviousLine == str && duplicates == 1 {
+			app.PrintLine = app.PreviousLineOrigin
+			app.PreviousLine = &str
+			app.PreviousLineOrigin = &strOrig
+			duplicates++
+		} else if *app.PreviousLine == str && duplicates > 1 {
+			app.PreviousLine = &str
+			app.PreviousLineOrigin = &strOrig
+			duplicates++
+		} else if *app.PreviousLine != str {
+			fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
+			app.PreviousLine = &str
+			app.PreviousLineOrigin = &strOrig
+			app.PrintLine = app.PreviousLineOrigin
+			duplicates = 1
+		}
 	}
 	return duplicates
 }
@@ -127,6 +178,46 @@ func firstArg(strOrig string, n int) int {
 			app.PrintLine = app.PreviousLineOrigin
 			duplicates = 1
 		} else if *app.PreviousLineOrigin != strOrig && duplicates == 1 {
+			fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
+			app.PreviousLineOrigin = &strOrig
+			app.PrintLine = app.PreviousLineOrigin
+			duplicates = 1
+		}
+	case dFlag:
+		if app.PreviousLineOrigin == nil {
+			app.PreviousLineOrigin = &strOrig
+			app.PrintLine = &strOrig
+			duplicates++
+		} else if *app.PreviousLineOrigin == strOrig && duplicates == 1 {
+			app.PrintLine = app.PreviousLineOrigin
+			app.PreviousLineOrigin = &strOrig
+			duplicates++
+		} else if *app.PreviousLineOrigin == strOrig && duplicates > 1 {
+			app.PreviousLineOrigin = &strOrig
+			duplicates++
+		} else if *app.PreviousLineOrigin != strOrig && duplicates > 1 {
+			fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
+			app.PreviousLineOrigin = &strOrig
+			app.PrintLine = app.PreviousLineOrigin
+			duplicates = 1
+		} else if *app.PreviousLineOrigin != strOrig && duplicates == 1 {
+			app.PreviousLineOrigin = &strOrig
+			app.PrintLine = app.PreviousLineOrigin
+			duplicates = 1
+		}
+	default:
+		if app.PreviousLineOrigin == nil {
+			app.PreviousLineOrigin = &strOrig
+			app.PrintLine = &strOrig
+			duplicates++
+		} else if *app.PreviousLineOrigin == strOrig && duplicates == 1 {
+			app.PrintLine = app.PreviousLineOrigin
+			app.PreviousLineOrigin = &strOrig
+			duplicates++
+		} else if *app.PreviousLineOrigin == strOrig && duplicates > 1 {
+			app.PreviousLineOrigin = &strOrig
+			duplicates++
+		} else if *app.PreviousLineOrigin != strOrig {
 			fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
 			app.PreviousLineOrigin = &strOrig
 			app.PrintLine = app.PreviousLineOrigin
@@ -188,6 +279,14 @@ func main() {
 		}
 	case uFlag:
 		if app.PreviousLineOrigin != nil && count == 1 {
+			fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
+		}
+	case dFlag:
+		if app.PreviousLineOrigin != nil && count > 1 {
+			fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
+		}
+	default:
+		if app.PreviousLineOrigin != nil && count > 0 {
 			fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
 		}
 	}
