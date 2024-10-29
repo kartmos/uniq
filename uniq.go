@@ -39,6 +39,7 @@ func withIArg(str, strOrig string, r int) int {
 		if app.PreviousLine == nil {
 			app.PreviousLine = &str
 			app.PreviousLineOrigin = &strOrig
+			app.PrintLine = &str
 			duplicates++
 		} else if *app.PreviousLine == str && duplicates == 1 {
 			app.PrintLine = app.PreviousLineOrigin
@@ -56,9 +57,37 @@ func withIArg(str, strOrig string, r int) int {
 			app.PrintLine = app.PreviousLineOrigin
 			duplicates = 1
 		}
+	case uFlag:
+		if app.PreviousLine == nil {
+			app.PreviousLine = &str
+			app.PreviousLineOrigin = &strOrig
+			app.PrintLine = &str
+			duplicates++
+		} else if *app.PreviousLine == str && duplicates == 1 {
+			app.PrintLine = app.PreviousLineOrigin
+			app.PreviousLine = &str
+			app.PreviousLineOrigin = &strOrig
+			duplicates++
+		} else if *app.PreviousLine == str && duplicates > 1 {
+			app.PreviousLine = &str
+			app.PreviousLineOrigin = &strOrig
+			duplicates++
+		} else if *app.PreviousLine != str && duplicates > 1 {
+			app.PreviousLine = &str
+			app.PreviousLineOrigin = &strOrig
+			app.PrintLine = app.PreviousLineOrigin
+			duplicates = 1
+		} else if *app.PreviousLine != str && duplicates == 1 {
+			fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
+			app.PreviousLine = &str
+			app.PreviousLineOrigin = &strOrig
+			app.PrintLine = app.PreviousLineOrigin
+			duplicates = 1
+		}
 	}
 	return duplicates
 }
+
 // Выполняет функционал первых 3х флагов без флага "-i"
 func firstArg(strOrig string, n int) int {
 	var duplicates = n
@@ -77,6 +106,28 @@ func firstArg(strOrig string, n int) int {
 			duplicates++
 		} else if *app.PreviousLineOrigin != strOrig {
 			fmt.Fprintf(app.Output, "%d %s\n", duplicates, *app.PrintLine)
+			app.PreviousLineOrigin = &strOrig
+			app.PrintLine = app.PreviousLineOrigin
+			duplicates = 1
+		}
+	case uFlag:
+		if app.PreviousLineOrigin == nil {
+			app.PreviousLineOrigin = &strOrig
+			app.PrintLine = &strOrig
+			duplicates++
+		} else if *app.PreviousLineOrigin == strOrig && duplicates == 1 {
+			app.PrintLine = app.PreviousLineOrigin
+			app.PreviousLineOrigin = &strOrig
+			duplicates++
+		} else if *app.PreviousLineOrigin == strOrig && duplicates > 1 {
+			app.PreviousLineOrigin = &strOrig
+			duplicates++
+		} else if *app.PreviousLineOrigin != strOrig && duplicates > 1 {
+			app.PreviousLineOrigin = &strOrig
+			app.PrintLine = app.PreviousLineOrigin
+			duplicates = 1
+		} else if *app.PreviousLineOrigin != strOrig && duplicates == 1 {
+			fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
 			app.PreviousLineOrigin = &strOrig
 			app.PrintLine = app.PreviousLineOrigin
 			duplicates = 1
@@ -130,7 +181,14 @@ func main() {
 		}
 	}
 	//Проверка последнего предложения если оно не вывелось
-	if app.PreviousLineOrigin != nil && count > 0 {
-		fmt.Fprintf(app.Output, "%d %s\n", count, *app.PrintLine)
+	switch true {
+	case cFlag:
+		if app.PreviousLineOrigin != nil && count > 0 {
+			fmt.Fprintf(app.Output, "%d %s\n", count, *app.PrintLine)
+		}
+	case uFlag:
+		if app.PreviousLineOrigin != nil && count == 1 {
+			fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
+		}
 	}
 }
