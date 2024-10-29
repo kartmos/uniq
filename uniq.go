@@ -56,54 +56,34 @@ func withIArg(str, strOrig string, r int) int {
 			app.PrintLine = app.PreviousLineOrigin
 			duplicates = 1
 		}
-		// case uFlag:
-
-		// 	fmt.Printf("uFlag: %v :%+v\n", uFlag, flag.Args())
-		// 	fmt.Printf("Вывод не повторяющиеся строк\n")
-		// 	for scanner.Scan() {
-		// 		line := scanner.Text()
-		// 		if app.PreviousLine == nil {
-		// 			app.PreviousLine = &line
-		// 		} else if *app.PreviousLine != line {
-		// 			if duplicates > 1 {
-		// 				fmt.Fprintf(app.Output, "%s\n", line)
-		// 			}
-		// 			app.PreviousLine = &line
-		// 			duplicates = 0
-		// 		}
-		// 		duplicates++
-		// 	}
-		// 	if app.PreviousLine != nil {
-		// 		if duplicates == 1 {
-		// 			fmt.Fprintf(app.Output, "%s\n", *app.PreviousLine)
-		// 		}
-		// 	}
-		// case dFlag:
-		// fmt.Printf("dFlag: %v :%+v\n", dFlag, flag.Args())
-		// fmt.Printf("Вывод повторяющиеся строки\n")
-		// for scanner.Scan() {
-		// 	line := scanner.Text()
-		// 	if app.PreviousLine == nil {
-		// 		app.PreviousLine = &line
-		// 	} else if *app.PreviousLine != line {
-		// 		if duplicates > 1 {
-		// 			fmt.Fprintf(app.Output, "%s\n", *app.PreviousLine)
-		// 		}
-		// 		app.PreviousLine = &line
-		// 		duplicates = 0
-		// 	}
-		// 	duplicates++
-		// }
-		// if app.PreviousLine != nil {
-		// 	if duplicates != 1 {
-		// 		fmt.Fprintf(app.Output, "%s\n", *app.PreviousLine)
-		// 	}
-		// }
 	}
 	return duplicates
 }
-
-// func firstArg(strOrig string, r int) int {}
+// Выполняет функционал первых 3х флагов без флага "-i"
+func firstArg(strOrig string, n int) int {
+	var duplicates = n
+	switch true {
+	case cFlag:
+		if app.PreviousLineOrigin == nil {
+			app.PreviousLineOrigin = &strOrig
+			app.PrintLine = &strOrig
+			duplicates++
+		} else if *app.PreviousLineOrigin == strOrig && duplicates == 1 {
+			app.PrintLine = app.PreviousLineOrigin
+			app.PreviousLineOrigin = &strOrig
+			duplicates++
+		} else if *app.PreviousLineOrigin == strOrig && duplicates > 1 {
+			app.PreviousLineOrigin = &strOrig
+			duplicates++
+		} else if *app.PreviousLineOrigin != strOrig {
+			fmt.Fprintf(app.Output, "%d %s\n", duplicates, *app.PrintLine)
+			app.PreviousLineOrigin = &strOrig
+			app.PrintLine = app.PreviousLineOrigin
+			duplicates = 1
+		}
+	}
+	return duplicates
+}
 
 func openFile(filename string) *os.File {
 	fh, err := os.Open(filename)
@@ -144,14 +124,13 @@ func main() {
 			line := strings.ToLower(stage.Text())
 			lineOrigin := stage.Text()
 			count = withIArg(line, lineOrigin, count)
+		} else {
+			lineOrigin := stage.Text()
+			count = firstArg(lineOrigin, count)
 		}
-		// else {
-		// 	lineOrigin := stage.Text()
-		// 	count = firstArg(lineOrigin, count)
-		// }
 	}
 	//Проверка последнего предложения если оно не вывелось
-	if app.PreviousLine != nil && count > 0 {
+	if app.PreviousLineOrigin != nil && count > 0 {
 		fmt.Fprintf(app.Output, "%d %s\n", count, *app.PrintLine)
 	}
 }
