@@ -218,6 +218,8 @@ func main() {
 	}
 
 	//Проверка последнего предложения если оно не вывелось
+
+	
 	switch true {
 	case cFlag:
 		if app.PreviousLineOrigin != nil && count > 0 {
