@@ -58,10 +58,10 @@ func skipFields(inPutString string) string{
 }
 
 func skipChar(inPutString string) string {
-	outPutCharRune := []byte {}
+	outPutCharRune := []rune {}
 	for i, char := range inPutString {
-		if i >= fFlag {
-			outPutCharRune = append(outPutCharRune, byte(char))
+		if i >= sFlag {
+			outPutCharRune = append(outPutCharRune, char)
 		}
 	}
 	outPutString := string(outPutCharRune)
