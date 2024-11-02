@@ -34,8 +34,45 @@ func init() {
 	flag.IntVar(&sFlag, "s", 0, "Пропускаем символ")
 }
 
-// Выполняет функционал первых 3х флагов если также есть флаг "-i"
-func withIArg(str, strOrig string, r int) int {
+// Выполняет функционал первых 3х флагов без флага "-i"
+
+func openFile(filename string) *os.File {
+	fh, err := os.Open(filename)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s", err)
+		os.Exit(1)
+	}
+	return fh
+}
+
+func skipFields(inPutString string) string{
+	inPutFields := strings.Fields(inPutString)
+	outPutFields := []string {}
+	for i, field := range inPutFields{
+		if i >= fFlag {
+			outPutFields = append(outPutFields, field)
+		}
+	}
+	outPutString := strings.Join(outPutFields, " ")
+	return outPutString
+}
+
+func skipChar(inPutString string) string {
+	outPutCharRune := []byte {}
+	for i, char := range inPutString {
+		if i >= fFlag {
+			outPutCharRune = append(outPutCharRune, byte(char))
+		}
+	}
+	outPutString := string(outPutCharRune)
+	return outPutString
+}
+
+func changeRegistrLow(inPutString string) string {
+	return strings.ToLower(inPutString)
+}
+
+func sortString(str, strOrig string, r int) int {
 	var duplicates = r
 	switch true {
 	case cFlag:
@@ -140,17 +177,6 @@ func withIArg(str, strOrig string, r int) int {
 	return duplicates
 }
 
-// Выполняет функционал первых 3х флагов без флага "-i"
-
-func openFile(filename string) *os.File {
-	fh, err := os.Open(filename)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s", err)
-		os.Exit(1)
-	}
-	return fh
-}
-
 func main() {
 	flag.Parse()
 
@@ -174,24 +200,23 @@ func main() {
 		os.Exit(1)
 	}
 
-	// func fArg(inLine, string) string{
-	// 	fields := strings.Fields(inline)
-	// 	countFields := len(fields)
-	// 	for i = *fFlag - 1; i <= countFields; i++
-	// }
-
-	stage := bufio.NewScanner(app.Input)
+	scanner := bufio.NewScanner(app.Input)
+	if scanner.Err() != nil {
+		fmt.Fprintf(os.Stderr, "%s", scanner.Err())
+	}
 	count := 0
-	for stage.Scan() {
+	// fmt.Println(fFlag)
+	for scanner.Scan() {
+		originString := scanner.Text()
 		if iFlag {
-			line := strings.ToLower(stage.Text())
-			lineOrigin := stage.Text()
-			count = withIArg(line, lineOrigin, count)
+			outFuncString := changeRegistrLow(skipChar(skipFields(scanner.Text())))	
+			count = sortString(outFuncString, originString, count)
 		} else {
-			lineOrigin := stage.Text()
-			count = withIArg(lineOrigin, lineOrigin, count)
+			outFuncString := skipChar(skipFields(scanner.Text()))
+			count = sortString(outFuncString, originString, count)
 		}
 	}
+
 	//Проверка последнего предложения если оно не вывелось
 	switch true {
 	case cFlag:
