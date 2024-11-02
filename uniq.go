@@ -91,7 +91,7 @@ func sortString(str, strOrig string, r int) int {
 			app.PreviousLineOrigin = &strOrig
 			duplicates++
 		} else if *app.PreviousLine != str {
-			fmt.Fprintf(app.Output, "%d %s\n", duplicates, *app.PrintLine)
+			fmt.Fprintf(app.Output, "   %d %s\n", duplicates, *app.PrintLine)
 			app.PreviousLine = &str
 			app.PreviousLineOrigin = &strOrig
 			app.PrintLine = app.PreviousLineOrigin
@@ -221,7 +221,7 @@ func main() {
 	switch true {
 	case cFlag:
 		if app.PreviousLineOrigin != nil && count > 0 {
-			fmt.Fprintf(app.Output, "%d %s\n", count, *app.PrintLine)
+			fmt.Fprintf(app.Output, "   %d %s\n", count, *app.PrintLine)
 		}
 	case uFlag:
 		if app.PreviousLineOrigin != nil && count == 1 {
