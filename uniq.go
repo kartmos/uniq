@@ -43,10 +43,10 @@ func openFile(filename string) *os.File {
 	return fh
 }
 
-func skipFields(inPutString string) string{
+func skipFields(inPutString string) string {
 	inPutFields := strings.Fields(inPutString)
-	outPutFields := []string {}
-	for i, field := range inPutFields{
+	outPutFields := []string{}
+	for i, field := range inPutFields {
 		if i >= fFlag {
 			outPutFields = append(outPutFields, field)
 		}
@@ -56,7 +56,7 @@ func skipFields(inPutString string) string{
 }
 
 func skipChar(inPutString string) string {
-	outPutCharRune := []byte {}
+	outPutCharRune := []byte{}
 	for i, char := range inPutString {
 		if i >= sFlag {
 			outPutCharRune = append(outPutCharRune, byte(char))
@@ -68,46 +68,48 @@ func skipChar(inPutString string) string {
 
 func sortString(str, strOrig string, r int) int {
 	var duplicates = r
-		if app.PreviousLine == nil {
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = &str
-			duplicates++
-		} else if *app.PreviousLine == str && duplicates == 1 {
-			app.PrintLine = app.PreviousLineOrigin
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			duplicates++
-		} else if *app.PreviousLine == str && duplicates > 1 {
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			duplicates++
-		} else if *app.PreviousLine != str && (!dFlag && !cFlag  && !uFlag) || cFlag {
-				if cFlag {
-					fmt.Fprintf(app.Output, "   %d %s\n", duplicates, *app.PrintLine)
-				}
-				if !dFlag && !cFlag && !uFlag {
-					fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
-				}
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = app.PreviousLineOrigin
-			duplicates = 1
-		} else if *app.PreviousLine != str && duplicates > 1 && (uFlag || dFlag){
-			if dFlag {
-				fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
-			}
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = app.PreviousLineOrigin
-			duplicates = 1
-		} else if *app.PreviousLine != str && duplicates == 1 && (uFlag || dFlag){
-			if uFlag{fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)}
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = app.PreviousLineOrigin
-			duplicates = 1
+	if app.PreviousLine == nil {
+		app.PreviousLine = &str
+		app.PreviousLineOrigin = &strOrig
+		app.PrintLine = &str
+		duplicates++
+	} else if *app.PreviousLine == str && duplicates == 1 {
+		app.PrintLine = app.PreviousLineOrigin
+		app.PreviousLine = &str
+		app.PreviousLineOrigin = &strOrig
+		duplicates++
+	} else if *app.PreviousLine == str && duplicates > 1 {
+		app.PreviousLine = &str
+		app.PreviousLineOrigin = &strOrig
+		duplicates++
+	} else if *app.PreviousLine != str && (!dFlag && !cFlag && !uFlag) || cFlag {
+		if cFlag {
+			fmt.Fprintf(app.Output, "   %d %s\n", duplicates, *app.PrintLine)
 		}
+		if !dFlag && !cFlag && !uFlag {
+			fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
+		}
+		app.PreviousLine = &str
+		app.PreviousLineOrigin = &strOrig
+		app.PrintLine = app.PreviousLineOrigin
+		duplicates = 1
+	} else if *app.PreviousLine != str && duplicates > 1 && (uFlag || dFlag) {
+		if dFlag {
+			fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
+		}
+		app.PreviousLine = &str
+		app.PreviousLineOrigin = &strOrig
+		app.PrintLine = app.PreviousLineOrigin
+		duplicates = 1
+	} else if *app.PreviousLine != str && duplicates == 1 && (uFlag || dFlag) {
+		if uFlag {
+			fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
+		}
+		app.PreviousLine = &str
+		app.PreviousLineOrigin = &strOrig
+		app.PrintLine = app.PreviousLineOrigin
+		duplicates = 1
+	}
 	return duplicates
 }
 
@@ -142,7 +144,7 @@ func main() {
 	for scanner.Scan() {
 		originString := scanner.Text()
 		if iFlag {
-			outFuncString := strings.ToLower(skipChar(skipFields(scanner.Text())))	
+			outFuncString := strings.ToLower(skipChar(skipFields(scanner.Text())))
 			count = sortString(outFuncString, originString, count)
 		} else {
 			outFuncString := skipChar(skipFields(scanner.Text()))
@@ -150,7 +152,6 @@ func main() {
 		}
 	}
 
-	//Проверка последнего предложения если оно не вывелось
 	switch true {
 	case cFlag:
 		if app.PreviousLineOrigin != nil && count > 0 {
