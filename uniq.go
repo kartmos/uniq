@@ -34,8 +34,6 @@ func init() {
 	flag.IntVar(&sFlag, "s", 0, "Пропускаем символ")
 }
 
-// Выполняет функционал первых 3х флагов без флага "-i"
-
 func openFile(filename string) *os.File {
 	fh, err := os.Open(filename)
 	if err != nil {
@@ -66,10 +64,6 @@ func skipChar(inPutString string) string {
 	}
 	outPutString := string(outPutCharRune)
 	return outPutString
-}
-
-func changeRegistrLow(inPutString string) string {
-	return strings.ToLower(inPutString)
 }
 
 func sortString(str, strOrig string, r int) int {
@@ -145,11 +139,10 @@ func main() {
 		fmt.Fprintf(os.Stderr, "%s", scanner.Err())
 	}
 	count := 0
-	// fmt.Println(fFlag)
 	for scanner.Scan() {
 		originString := scanner.Text()
 		if iFlag {
-			outFuncString := changeRegistrLow(skipChar(skipFields(scanner.Text())))	
+			outFuncString := strings.ToLower(skipChar(skipFields(scanner.Text())))	
 			count = sortString(outFuncString, originString, count)
 		} else {
 			outFuncString := skipChar(skipFields(scanner.Text()))
@@ -158,8 +151,6 @@ func main() {
 	}
 
 	//Проверка последнего предложения если оно не вывелось
-
-	
 	switch true {
 	case cFlag:
 		if app.PreviousLineOrigin != nil && count > 0 {
