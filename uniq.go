@@ -74,8 +74,6 @@ func changeRegistrLow(inPutString string) string {
 
 func sortString(str, strOrig string, r int) int {
 	var duplicates = r
-	switch true {
-	case cFlag:
 		if app.PreviousLine == nil {
 			app.PreviousLine = &str
 			app.PreviousLineOrigin = &strOrig
@@ -90,90 +88,32 @@ func sortString(str, strOrig string, r int) int {
 			app.PreviousLine = &str
 			app.PreviousLineOrigin = &strOrig
 			duplicates++
-		} else if *app.PreviousLine != str {
-			fmt.Fprintf(app.Output, "   %d %s\n", duplicates, *app.PrintLine)
+		} else if *app.PreviousLine != str && (!dFlag && !cFlag  && !uFlag) || cFlag {
+				if cFlag {
+					fmt.Fprintf(app.Output, "   %d %s\n", duplicates, *app.PrintLine)
+				}
+				if dFlag && !cFlag  && !uFlag {
+					fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
+				}
+			app.PreviousLine = &str
+			app.PreviousLineOrigin = &strOrig
+			app.PrintLine = app.PreviousLineOrigin
+			duplicates = 1
+		} else if *app.PreviousLine != str && duplicates > 1 && (uFlag || dFlag){
+			if dFlag {
+				fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
+			}
+			app.PreviousLine = &str
+			app.PreviousLineOrigin = &strOrig
+			app.PrintLine = app.PreviousLineOrigin
+			duplicates = 1
+		} else if *app.PreviousLine != str && duplicates == 1 && (uFlag || dFlag){
+			if uFlag{fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)}
 			app.PreviousLine = &str
 			app.PreviousLineOrigin = &strOrig
 			app.PrintLine = app.PreviousLineOrigin
 			duplicates = 1
 		}
-	case uFlag:
-		if app.PreviousLine == nil {
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = &str
-			duplicates++
-		} else if *app.PreviousLine == str && duplicates == 1 {
-			app.PrintLine = app.PreviousLineOrigin
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			duplicates++
-		} else if *app.PreviousLine == str && duplicates > 1 {
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			duplicates++
-		} else if *app.PreviousLine != str && duplicates > 1 {
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = app.PreviousLineOrigin
-			duplicates = 1
-		} else if *app.PreviousLine != str && duplicates == 1 {
-			fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = app.PreviousLineOrigin
-			duplicates = 1
-		}
-	case dFlag:
-		if app.PreviousLine == nil {
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = &str
-			duplicates++
-		} else if *app.PreviousLine == str && duplicates == 1 {
-			app.PrintLine = app.PreviousLineOrigin
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			duplicates++
-		} else if *app.PreviousLine == str && duplicates > 1 {
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			duplicates++
-		} else if *app.PreviousLine != str && duplicates > 1 {
-			fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = app.PreviousLineOrigin
-			duplicates = 1
-		} else if *app.PreviousLine != str && duplicates == 1 {
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = app.PreviousLineOrigin
-			duplicates = 1
-		}
-	default:
-		if app.PreviousLine == nil {
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = &str
-			duplicates++
-		} else if *app.PreviousLine == str && duplicates == 1 {
-			app.PrintLine = app.PreviousLineOrigin
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			duplicates++
-		} else if *app.PreviousLine == str && duplicates > 1 {
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			duplicates++
-		} else if *app.PreviousLine != str {
-			fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = app.PreviousLineOrigin
-			duplicates = 1
-		}
-	}
 	return duplicates
 }
 
