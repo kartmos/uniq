@@ -92,7 +92,7 @@ func sortString(str, strOrig string, r int) int {
 				if cFlag {
 					fmt.Fprintf(app.Output, "   %d %s\n", duplicates, *app.PrintLine)
 				}
-				if dFlag && !cFlag  && !uFlag {
+				if !dFlag && !cFlag && !uFlag {
 					fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
 				}
 			app.PreviousLine = &str
