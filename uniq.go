@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"unicode"
 )
 
 var uniqueFlag bool
@@ -51,7 +52,7 @@ func skipFields(inPutString string) string {
 	for i, char := range inPutString {
 		if numSpace == skipFieldsFlag {
 			break
-		} else if char == ' ' {
+		} else if unicode.IsSpace(char) {
 			indexOfSpace = i
 			numSpace++
 		}
@@ -67,14 +68,14 @@ func skipChar(inPutString string) string {
 	return inPutString[skipCharFlag:]
 }
 
-func (r *App) reader() (string, bool) {
+func (r *App) read() (string, bool) {
 	if r.Scanner.Scan() {
 		return r.Scanner.Text(), true
 	}
 	return "", false
 }
 
-func (p *App) processer(str, strOrig string) (string, int, bool) {
+func (p *App) processor(str, strOrig string) (string, int, bool) {
 	if ignoreCaseFlag {
 		str = strings.ToLower(skipChar(skipFields(str)))
 	} else {
@@ -101,7 +102,7 @@ func (p *App) processer(str, strOrig string) (string, int, bool) {
 	}
 }
 
-func (w *App) writer(str string, count int) {
+func (w *App) write(str string, count int) {
 	if uniqueFlag && count > 1 {
 		return
 	}
@@ -120,17 +121,17 @@ func (a *App) Run() {
 	a.Scanner = bufio.NewScanner(a.Input)
 	is_run := true
 	for is_run {
-		strOrig, run := a.reader()
-		if !run {
+		strOrig, eof := a.read()
+		if !eof {
 			break
 		}
-		strWrite, countWrite, result := a.processer(strOrig, strOrig)
+		strWrite, countWrite, result := a.processor(strOrig, strOrig)
 		if result {
-			a.writer(strWrite, countWrite)
+			a.write(strWrite, countWrite)
 		}
 	}
 	if app.Count > 0 {
-		app.writer(*app.PreviousLineOrigin, app.Count)
+		app.write(*app.PreviousLineOrigin, app.Count)
 	}
 }
 
