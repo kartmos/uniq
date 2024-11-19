@@ -6,141 +6,36 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"unicode"
 )
 
-var uFlag bool
-var dFlag bool
-var cFlag bool
-var iFlag bool
-var fFlag int
-var sFlag int
+var uniqueFlag bool
+var repeatedFlag bool
+var countFlag bool
+var ignoreCaseFlag bool
+var skipFieldsFlag int
+var skipCharFlag int
+var sumBoolFlag int
 
 type App struct {
 	Input              *os.File
 	Output             *os.File
 	PreviousLine       *string
 	PreviousLineOrigin *string
-	PrintLine          *string
+	Count              int
+	Scanner            *bufio.Scanner
 }
 
 var app = App{}
 
 func init() {
-	flag.BoolVar(&cFlag, "c", false, "Подсчитать количество встречаний строки во входных данных")
-	flag.BoolVar(&uFlag, "u", false, "Не повторяющиеся строки")
-	flag.BoolVar(&dFlag, "d", false, "Повторяющиеся строки")
-	flag.BoolVar(&iFlag, "i", false, "Сравнение без учета регистра")
-	flag.IntVar(&fFlag, "f", 0, "Пропускаем поле")
-	flag.IntVar(&sFlag, "s", 0, "Пропускаем символ")
+	flag.BoolVar(&countFlag, "c", false, "Подсчитать количество встречаний строки во входных данных")
+	flag.BoolVar(&uniqueFlag, "u", false, "Не повторяющиеся строки")
+	flag.BoolVar(&repeatedFlag, "d", false, "Повторяющиеся строки")
+	flag.BoolVar(&ignoreCaseFlag, "i", false, "Сравнение без учета регистра")
+	flag.IntVar(&skipFieldsFlag, "f", 0, "Пропускаем поле")
+	flag.IntVar(&skipCharFlag, "s", 0, "Пропускаем символ")
 }
-
-// Выполняет функционал первых 3х флагов если также есть флаг "-i"
-func withIArg(str, strOrig string, r int) int {
-	var duplicates = r
-	switch true {
-	case cFlag:
-		if app.PreviousLine == nil {
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = &str
-			duplicates++
-		} else if *app.PreviousLine == str && duplicates == 1 {
-			app.PrintLine = app.PreviousLineOrigin
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			duplicates++
-		} else if *app.PreviousLine == str && duplicates > 1 {
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			duplicates++
-		} else if *app.PreviousLine != str {
-			fmt.Fprintf(app.Output, "%d %s\n", duplicates, *app.PrintLine)
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = app.PreviousLineOrigin
-			duplicates = 1
-		}
-	case uFlag:
-		if app.PreviousLine == nil {
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = &str
-			duplicates++
-		} else if *app.PreviousLine == str && duplicates == 1 {
-			app.PrintLine = app.PreviousLineOrigin
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			duplicates++
-		} else if *app.PreviousLine == str && duplicates > 1 {
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			duplicates++
-		} else if *app.PreviousLine != str && duplicates > 1 {
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = app.PreviousLineOrigin
-			duplicates = 1
-		} else if *app.PreviousLine != str && duplicates == 1 {
-			fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = app.PreviousLineOrigin
-			duplicates = 1
-		}
-	case dFlag:
-		if app.PreviousLine == nil {
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = &str
-			duplicates++
-		} else if *app.PreviousLine == str && duplicates == 1 {
-			app.PrintLine = app.PreviousLineOrigin
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			duplicates++
-		} else if *app.PreviousLine == str && duplicates > 1 {
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			duplicates++
-		} else if *app.PreviousLine != str && duplicates > 1 {
-			fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = app.PreviousLineOrigin
-			duplicates = 1
-		} else if *app.PreviousLine != str && duplicates == 1 {
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = app.PreviousLineOrigin
-			duplicates = 1
-		}
-	default:
-		if app.PreviousLine == nil {
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = &str
-			duplicates++
-		} else if *app.PreviousLine == str && duplicates == 1 {
-			app.PrintLine = app.PreviousLineOrigin
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			duplicates++
-		} else if *app.PreviousLine == str && duplicates > 1 {
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			duplicates++
-		} else if *app.PreviousLine != str {
-			fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
-			app.PreviousLine = &str
-			app.PreviousLineOrigin = &strOrig
-			app.PrintLine = app.PreviousLineOrigin
-			duplicates = 1
-		}
-	}
-	return duplicates
-}
-
-// Выполняет функционал первых 3х флагов без флага "-i"
 
 func openFile(filename string) *os.File {
 	fh, err := os.Open(filename)
@@ -151,64 +46,123 @@ func openFile(filename string) *os.File {
 	return fh
 }
 
+func skipFields(inPutString string) string {
+	indexOfSpace := -1
+	numSpace := 0
+	for i, char := range inPutString {
+		if numSpace == skipFieldsFlag {
+			break
+		} else if unicode.IsSpace(char) {
+			indexOfSpace = i
+			numSpace++
+		}
+	}
+	outPutString := inPutString[indexOfSpace+1:]
+	return outPutString
+}
+
+func skipChar(inPutString string) string {
+	if skipCharFlag >= len(inPutString) {
+		return ""
+	}
+	return inPutString[skipCharFlag:]
+}
+
+func (r *App) read() (string, bool) {
+	if r.Scanner.Scan() {
+		return r.Scanner.Text(), true
+	}
+	return "", false
+}
+
+func (p *App) processor(str, strOrig string) (string, int, bool) {
+	if ignoreCaseFlag {
+		str = strings.ToLower(skipChar(skipFields(str)))
+	} else {
+		str = skipChar(skipFields(str))
+	}
+
+	if p.PreviousLine == nil {
+		p.PreviousLine = &str
+		p.PreviousLineOrigin = &strOrig
+		p.Count = 1
+		return "", 0, false
+	}
+
+	if *p.PreviousLine == str {
+		p.Count++
+		return "", 0, false
+	} else {
+		lineToPrint := *p.PreviousLineOrigin
+		countToPrint := p.Count
+		p.PreviousLine = &str
+		p.PreviousLineOrigin = &strOrig
+		p.Count = 1
+		return lineToPrint, countToPrint, true
+	}
+}
+
+func (w *App) write(str string, count int) {
+	if uniqueFlag && count > 1 {
+		return
+	}
+	if repeatedFlag && count == 1 {
+		return
+	}
+
+	if countFlag {
+		fmt.Fprintf(w.Output, "   %d %s\n", count, str)
+	} else {
+		fmt.Fprintf(w.Output, "%s\n", str)
+	}
+}
+
+func (a *App) Run() {
+	a.Scanner = bufio.NewScanner(a.Input)
+	is_run := true
+	for is_run {
+		strOrig, eof := a.read()
+		if !eof {
+			break
+		}
+		strWrite, countWrite, result := a.processor(strOrig, strOrig)
+		if result {
+			a.write(strWrite, countWrite)
+		}
+	}
+	if app.Count > 0 {
+		app.write(*app.PreviousLineOrigin, app.Count)
+	}
+}
+
 func main() {
 	flag.Parse()
-
-	argN := len(flag.Args())
-	switch argN {
-	case 0:
-		app.Input = os.Stdin
-		app.Output = os.Stdout
-	case 1:
-		app.Input = openFile(flag.Args()[0])
-		defer app.Input.Close()
-		app.Output = os.Stdout
-	case 2:
-		app.Input = openFile(flag.Args()[0])
-		app.Output = openFile(flag.Args()[1])
-		defer app.Input.Close()
-		defer app.Output.Close()
-	default:
-		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
-		flag.PrintDefaults()
+	if countFlag {
+		sumBoolFlag++
+	}
+	if uniqueFlag {
+		sumBoolFlag++
+	}
+	if repeatedFlag {
+		sumBoolFlag++
+	}
+	if sumBoolFlag > 1 {
+		fmt.Fprint(os.Stderr, "Can't use options -c | -d | -u together")
 		os.Exit(1)
 	}
 
-	// func fArg(inLine, string) string{
-	// 	fields := strings.Fields(inline)
-	// 	countFields := len(fields)
-	// 	for i = *fFlag - 1; i <= countFields; i++
-	// }
+	if len(flag.Args()) > 0 {
+		app.Input = openFile(flag.Args()[0])
+		defer app.Input.Close()
+	} else {
+		app.Input = os.Stdin
+	}
 
-	stage := bufio.NewScanner(app.Input)
-	count := 0
-	for stage.Scan() {
-		if iFlag {
-			line := strings.ToLower(stage.Text())
-			lineOrigin := stage.Text()
-			count = withIArg(line, lineOrigin, count)
-		} else {
-			lineOrigin := stage.Text()
-			count = withIArg(lineOrigin, lineOrigin, count)
-		}
+	if len(flag.Args()) > 1 {
+		app.Output = openFile(flag.Args()[1])
+		defer app.Output.Close()
+	} else {
+		app.Output = os.Stdout
 	}
-	//Проверка последнего предложения если оно не вывелось
-	switch true {
-	case cFlag:
-		if app.PreviousLineOrigin != nil && count > 0 {
-			fmt.Fprintf(app.Output, "%d %s\n", count, *app.PrintLine)
-		}
-	case uFlag:
-		if app.PreviousLineOrigin != nil && count == 1 {
-			fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
-		}
-	case dFlag:
-		if app.PreviousLineOrigin != nil && count > 1 {
-			fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
-		}
-	default:
-		if app.PreviousLineOrigin != nil && count > 0 {
-			fmt.Fprintf(app.Output, "%s\n", *app.PrintLine)
-		}
-	}
+	app.Run()
 }
